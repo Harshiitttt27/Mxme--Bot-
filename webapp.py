@@ -83,6 +83,18 @@ def monitor_loop():
             if success:
                 position_queue.remove(symbol)
                 print("[QUEUE FILLED]", msg)
+        
+        # 4. Rebuy notifications
+        # Track cooldown expiry notifications to avoid spamming
+        notified_rebuy = set()  # Track symbols whose cooldown expiry has been notified
+        for symbol, cooldown in cooldowns.items():
+            if cooldown <= datetime.now() and symbol not in notified_rebuy:
+                send_alert(f"🔄 {symbol} is ready for rebuy after cooldown.")
+                notified_rebuy.add(symbol)
+
+        for symbol, expiry in cooldowns.items():
+            print(f"[COOLDOWN] {symbol} expires at {expiry}")
+
 
         print(f"[INFO] Balance: ${config.balance:.2f} | Positions: {len(positions)} | Queue: {position_queue}")
         time.sleep(120)
