@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><title>MEXC Trading Bot</title></head>
+<body>
+<h2>MEXC Trading Bot</h2>
+<form method="POST">
+    <label>Symbols:</label><input type="text" name="symbols" value="BTCUSDT,ETHUSDT"><br>
+    <label>Start Date:</label><input type="date" name="start_date"><br>
+    <label>End Date:</label><input type="date" name="end_date"><br>
+    <label>Starting Balance:</label><input type="number" name="starting_balance" value="10000"><br>
+    <label>Polygon.io API Key:</label><input type="password" name="api_key"><br>
+    <button type="submit">Run Backtest</button>
+</form>
+{% if results %}
+<h3>Results</h3>
+<table border="1">
+<tr><th>Symbol</th><th>Entry</th><th>Exit</th><th>PnL</th><th>Reason</th></tr>
+{% for r in results %}
+<tr><td>{{ r.symbol }}</td><td>{{ r.entry }}</td><td>{{ r.exit }}</td><td>{{ r.pnl }}</td><td>{{ r.reason }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+</body>
+</html>
