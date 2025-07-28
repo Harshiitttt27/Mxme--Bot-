@@ -13,6 +13,7 @@ class Config:
     REBUY_DELAY_DAYS = int(os.getenv("REBUY_DELAY_DAYS", 5))
     MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", 5))
     STARTING_BALANCE = float(os.getenv("STARTING_BALANCE", 10000))
+    RISE_ACTION = os.getenv("RISE_ACTION", "exit").lower()
 
     def __init__(self):
         self.balance = self.STARTING_BALANCE

@@ -6,6 +6,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 from app.config import Config
+from app.notifier import send_alert
 from app.strategy import try_enter_position, check_exit
 import random
 
@@ -42,6 +43,15 @@ position_queue = []
 # Replace with real price API
 def get_live_price(symbol):
     return round(100 + random.uniform(-2, 2), 2)
+
+reason = check_exit(
+    pos['entry_price'],
+    price,
+    pos,
+    config,
+    symbol,
+    notify=send_alert
+)
 
 def monitor_loop():
     symbols = ["BTC", "ETH", "ADA", "XRP", "SOL"]
@@ -83,13 +93,7 @@ def start_monitoring():
     t.daemon = True
     t.start()
 
-@app.route("/")
-def index():
-    return f"Trading bot running. Active positions: {len(positions)}"
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
-
-if __name__ == '__main__':
     app.run(debug=True)

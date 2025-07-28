@@ -51,22 +51,40 @@ def check_queue_for_entry(price_dict, position_queue, positions, cooldowns, conf
             position_queue.remove(symbol)
             print("[QUEUE FILLED]", msg)
 
-def check_exit(entry_price, current_price, state, config, symbol=None):
+def check_exit(entry_price, current_price, state, config, symbol=None, notify=None):
     change = ((current_price - entry_price) / entry_price) * 100
 
+    # Stop-loss
     if change <= config.DROP_THRESHOLD:
+        if notify:
+            notify(f"🛑 STOP LOSS: {symbol} | Entry: {entry_price:.2f} → {current_price:.2f} ({change:.2f}%)")
         return "stop_loss"
 
+    # Rise threshold logic
     if change >= config.RISE_THRESHOLD:
-        if not state.get('trailing_active'):
-            state['peak'] = current_price
-            state['trailing_active'] = True
-            return "trailing_activated"
-        else:
-            state['peak'] = max(state['peak'], current_price)
+        if config.RISE_ACTION == "alert":
+            if not state.get('rise_alerted'):
+                state['rise_alerted'] = True
+                if notify:
+                    notify(f"📈 RISE ALERT: {symbol} crossed +{config.RISE_THRESHOLD}% → Current: {current_price:.2f}")
+            return None  # hold position
+        elif config.RISE_ACTION == "exit":
+            if not state.get('trailing_active'):
+                state['peak'] = current_price
+                state['trailing_active'] = True
+                if notify:
+                    notify(f"📈 TRAILING ACTIVATED: {symbol} @ {current_price:.2f} (+{change:.2f}%)")
+                return "trailing_activated"
+            else:
+                state['peak'] = max(state['peak'], current_price)
 
+    # Trailing exit
     if state.get('trailing_active'):
-        if current_price <= state['peak'] * (1 - config.TRAILING_STOP / 100):
+        trailing_price = state['peak'] * (1 - config.TRAILING_STOP / 100)
+        if current_price <= trailing_price:
+            drop = ((current_price - state['peak']) / state['peak']) * 100
+            if notify:
+                notify(f"🔻 TRAILING EXIT: {symbol} | Peak: {state['peak']:.2f} → {current_price:.2f} ({drop:.2f}%)")
             return "trailing_exit"
 
     return None
