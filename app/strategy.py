@@ -55,3 +55,32 @@ def check_exit(entry_price, current_price, state, config, symbol=None, notify=No
 
     # No exit condition met
     return None
+
+def try_enter_position(symbol, price, positions, cooldowns, config, queue=None):
+    from app.notifier import send_alert  # avoid circular imports
+
+    if symbol in positions:
+        return False, f"{symbol} already in active positions."
+
+    if symbol in cooldowns and cooldowns[symbol] > datetime.now():
+        if queue is not None and symbol not in queue:
+            queue.append(symbol)
+        return False, f"{symbol} in cooldown. Added to queue."
+
+    if len(positions) >= config.MAX_CONCURRENT_POSITIONS:
+        if queue is not None and symbol not in queue:
+            queue.append(symbol)
+        return False, f"Max concurrent positions reached. {symbol} added to queue."
+
+    quantity = config.TRADE_AMOUNT / price
+    positions[symbol] = {
+        "entry_price": price,
+        "quantity": quantity,
+        "peak": price,
+        "trailing_active": False
+    }
+
+    config.balance -= config.TRADE_AMOUNT * (1 + config.FEE)
+
+    send_alert(f"🟢 BUY {symbol} @ ${price:.2f} | Qty: {quantity:.4f}")
+    return True, f"Entered position in {symbol}"

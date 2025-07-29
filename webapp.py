@@ -32,7 +32,6 @@ def index():
     return render_template('index.html', results=results)
 
 
-app = Flask(__name__)
 config = Config()
 
 # Simulated data
@@ -44,14 +43,14 @@ position_queue = []
 def get_live_price(symbol):
     return round(100 + random.uniform(-2, 2), 2)
 
-reason = check_exit(
-    pos['entry_price'],
-    price,
-    pos,
-    config,
-    symbol,
-    notify=send_alert
-)
+# reason = check_exit(
+#     pos['entry_price'],
+#     price,
+#     pos,
+#     config,
+#     symbol,
+#     notify=send_alert
+# )
 
 def monitor_loop():
     symbols = ["BTC", "ETH", "ADA", "XRP", "SOL"]
@@ -99,11 +98,14 @@ def monitor_loop():
         print(f"[INFO] Balance: ${config.balance:.2f} | Positions: {len(positions)} | Queue: {position_queue}")
         time.sleep(120)
 
-@app.before_first_request
+@app.before_request
 def start_monitoring():
-    t = threading.Thread(target=monitor_loop)
-    t.daemon = True
-    t.start()
+    if not hasattr(app, 'monitor_started'):
+        t = threading.Thread(target=monitor_loop)
+        t.daemon = True
+        t.start()
+        app.monitor_started = True  # prevent multiple threads
+
 
 
 
