@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from app.strategy import check_exit, can_enter
+from app.notifier import notify_buy, notify_sell, notify_summary
 
 def run_backtest(data, config):
     balance = config.STARTING_BALANCE
@@ -24,7 +25,7 @@ def run_backtest(data, config):
                     'entry_time': now,
                     'peak': price
                 }
-                continue
+                notify_buy(symbol, price, quantity, balance)
 
             # Exit
             if symbol in positions:
@@ -35,6 +36,9 @@ def run_backtest(data, config):
                     net = gross * (1 - config.FEE)
                     cost = state['entry_price'] * state['quantity'] * (1 + config.FEE)
                     pnl = net - cost
+                    balance += pnl
+                    notify_sell(symbol, state['entry_price'], price, pnl, reason, balance)
+
                     trades.append({
                         'symbol': symbol,
                         'entry': round(state['entry_price'], 4),
@@ -44,6 +48,8 @@ def run_backtest(data, config):
                     })
                     del positions[symbol]
                     cooldowns[symbol] = now + timedelta(days=config.REBUY_DELAY_DAYS)
+                    notify_summary(trades, balance, config.STARTING_BALANCE)
+
     return trades
 
 
