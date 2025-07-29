@@ -14,6 +14,8 @@ class Config:
     MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", 5))
     STARTING_BALANCE = float(os.getenv("STARTING_BALANCE", 10000))
     RISE_ACTION = os.getenv("RISE_ACTION", "exit").lower()
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
     def __init__(self):
         self.balance = self.STARTING_BALANCE

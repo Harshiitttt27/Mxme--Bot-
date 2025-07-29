@@ -9,8 +9,14 @@ from app.config import Config
 from app.notifier import send_alert
 from app.strategy import try_enter_position, check_exit
 import random
+import threading
+
+lock = threading.Lock()
+
 
 app = Flask(__name__)
+notified_rebuy = set()
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -58,44 +64,49 @@ def monitor_loop():
         price_dict = {s: get_live_price(s) for s in symbols}
 
         # 1. Exits
-        for symbol in list(positions.keys()):
-            pos = positions[symbol]
-            price = price_dict[symbol]
-            reason = check_exit(pos['entry_price'], price, pos, config, symbol)
+        with lock:
+            for symbol in list(positions.keys()):
+                pos = positions[symbol]
+                price = price_dict[symbol]
+                reason = check_exit(pos['entry_price'], price, pos, config, symbol, notify=send_alert)
 
-            if reason in ["stop_loss", "trailing_exit"]:
-                net = price * pos['quantity'] * (1 - config.FEE)
-                config.balance += net
-                cooldowns[symbol] = datetime.now() + timedelta(days=config.REBUY_DELAY_DAYS)
-                del positions[symbol]
-                print(f"[SELL] {symbol} due to {reason} @ ${price:.2f}")
+                if reason in ["stop_loss", "trailing_exit"]:
+                    net = price * pos['quantity'] * (1 - config.FEE)
+                    config.balance += net
+                    cooldowns[symbol] = datetime.now() + timedelta(days=config.REBUY_DELAY_DAYS)
+                    del positions[symbol]
+                    send_alert(f"[SELL] {symbol} @ ${price:.2f} due to {reason}. Balance: ${config.balance:.2f}")
 
         # 2. Entries
-        for symbol in symbols:
-            price = price_dict[symbol]
-            try_enter_position(symbol, price, positions, cooldowns, config, position_queue)
+        with lock:
+            for symbol in symbols:
+                price = price_dict[symbol]
+                try_enter_position(symbol, price, positions, cooldowns, config, position_queue)
 
         # 3. Process queue
-        for symbol in position_queue[:]:
-            price = price_dict[symbol]
-            success, msg = try_enter_position(symbol, price, positions, cooldowns, config, position_queue)
-            if success:
-                position_queue.remove(symbol)
-                print("[QUEUE FILLED]", msg)
-        
+        with lock:
+            for symbol in position_queue[:]:
+                price = price_dict[symbol]
+                success, msg = try_enter_position(symbol, price, positions, cooldowns, config, position_queue)
+                if success:
+                    position_queue.remove(symbol)
+                    print("[QUEUE FILLED]", msg)
+
         # 4. Rebuy notifications
-        # Track cooldown expiry notifications to avoid spamming
-        notified_rebuy = set()  # Track symbols whose cooldown expiry has been notified
-        for symbol, cooldown in cooldowns.items():
-            if cooldown <= datetime.now() and symbol not in notified_rebuy:
-                send_alert(f"🔄 {symbol} is ready for rebuy after cooldown.")
-                notified_rebuy.add(symbol)
+        with lock:
+            for symbol, cooldown in cooldowns.items():
+                if cooldown <= datetime.now() and symbol not in notified_rebuy:
+                    send_alert(f"🔄 {symbol} is ready for rebuy after cooldown.")
+                    notified_rebuy.add(symbol)
 
-        for symbol, expiry in cooldowns.items():
-            print(f"[COOLDOWN] {symbol} expires at {expiry}")
+        # 5. Debug: Cooldown Status
+        with lock:
+            for symbol, expiry in cooldowns.items():
+                print(f"[COOLDOWN] {symbol} expires at {expiry}")
 
-
-        print(f"[INFO] Balance: ${config.balance:.2f} | Positions: {len(positions)} | Queue: {position_queue}")
+        with lock:
+            print(f"[INFO] Balance: ${config.balance:.2f} | Positions: {len(positions)} | Queue: {position_queue}")
+        
         time.sleep(120)
 
 @app.before_request
