@@ -204,7 +204,7 @@
     <div class="container py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>📊 MEXC Trading Bot Backtester</h2>
-        {% comment %}
+        
         <div>
           {% if results %}<a href="/download-csv" class="btn btn-success"
             >⬇️ Export CSV</a
@@ -214,7 +214,7 @@
             >⬇️ Export JSON</a
           >{% endif %}
         </div>
-        {% endcomment %}
+        
         <h3>📤 Export Live Trades</h3>
         <form method="POST" action="/live/export">
           <button type="submit" name="format" value="csv">Export CSV</button>

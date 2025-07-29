@@ -58,6 +58,10 @@ def export_backtest(trades, filename="backtest"):
     os.makedirs("exports", exist_ok=True)
 
     # CSV
+    if not trades:
+        print("[EXPORT] No trades to export.")
+        return
+    
     csv_path = f"exports/{filename}.csv"
     with open(csv_path, "w", newline='') as f:
         writer = csv.DictWriter(f, fieldnames=trades[0].keys())

@@ -154,6 +154,10 @@ def export_live():
         filepath = export_live_trades_csv()
     else:
         filepath = export_live_trades_json()
+    
+    if not filepath:
+        return "⚠️ No trades available to export.", 400
+    
     return send_file(filepath, as_attachment=True)
 
 

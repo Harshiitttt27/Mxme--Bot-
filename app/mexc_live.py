@@ -78,6 +78,9 @@ import os
 EXPORT_DIR = "exports"
 
 def export_live_trades_csv():
+    if not live_trades:
+        print("[EXPORT] No live trades to export.")
+        return None  # gracefully handle no data
     filepath = os.path.join(EXPORT_DIR, "live_trades.csv")
     with open(filepath, "w", newline='') as f:
         writer = csv.DictWriter(f, fieldnames=live_trades[0].keys())
@@ -86,6 +89,9 @@ def export_live_trades_csv():
     return filepath
 
 def export_live_trades_json():
+    if not live_trades:
+        print("[EXPORT] No live trades to export.")
+        return None
     filepath = os.path.join(EXPORT_DIR, "live_trades.json")
     with open(filepath, "w") as f:
         json.dump(live_trades, f, indent=2)
