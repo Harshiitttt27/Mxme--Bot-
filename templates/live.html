@@ -1,0 +1,59 @@
+<!-- FILE: templates/live.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MEXC Live Trading</title>
+</head>
+<body>
+    <h1>Live Trading Dashboard</h1>
+
+    <form method="POST">
+        <input name="symbol" placeholder="e.g. BTCUSDT" required>
+        <input name="quantity" placeholder="e.g. 0.01" required>
+        <select name="side">
+            <option>BUY</option>
+            <option>SELL</option>
+        </select>
+        <button type="submit">Execute Order</button>
+    </form>
+
+    {% if message %}
+        <p><strong>{{ message }}</strong></p>
+    {% endif %}
+
+    <h2>📈 Active Positions</h2>
+    {% if positions %}
+        <table border="1">
+            <tr><th>Symbol</th><th>Qty</th><th>Entry Price</th><th>Entry Time</th></tr>
+            {% for s, p in positions.items() %}
+            <tr>
+                <td>{{ s }}</td>
+                <td>{{ p.quantity }}</td>
+                <td>{{ p.entry_price }}</td>
+                <td>{{ p.time }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No active positions</p>
+    {% endif %}
+
+    <h2>🧾 Trade History</h2>
+    {% if trades %}
+        <table border="1">
+            <tr><th>Time</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th></tr>
+            {% for t in trades %}
+            <tr>
+                <td>{{ t.timestamp }}</td>
+                <td>{{ t.symbol }}</td>
+                <td>{{ t.side }}</td>
+                <td>{{ t.quantity }}</td>
+                <td>{{ t.price }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No trades yet</p>
+    {% endif %}
+</body>
+</html>

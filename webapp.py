@@ -117,6 +117,30 @@ def start_monitoring():
         t.start()
         app.monitor_started = True  # prevent multiple threads
 
+from app.mexc_live import place_market_order, get_price
+
+from app.mexc_live import place_market_order, get_price, live_positions, live_trades
+
+@app.route('/live', methods=['GET', 'POST'])
+def live_trading():
+    message = ""
+    if request.method == 'POST':
+        symbol = request.form['symbol'].strip().upper()
+        quantity = request.form['quantity']
+        side = request.form['side']
+
+        try:
+            result = place_market_order(config.MEXC_API_KEY, config.MEXC_SECRET_KEY, symbol, side, quantity)
+            message = f"Order Executed: {result}"
+        except Exception as e:
+            message = f"Error: {e}"
+
+    return render_template(
+        'live.html',
+        message=message,
+        positions=live_positions,
+        trades=live_trades
+    )
 
 
 

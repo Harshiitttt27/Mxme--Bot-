@@ -16,6 +16,8 @@ class Config:
     RISE_ACTION = os.getenv("RISE_ACTION", "exit").lower()
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+    MEXC_API_KEY = os.getenv("MEXC_API_KEY")
+    MEXC_SECRET_KEY = os.getenv("MEXC_SECRET_KEY")
 
     def __init__(self):
         self.balance = self.STARTING_BALANCE
