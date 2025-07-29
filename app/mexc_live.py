@@ -70,3 +70,23 @@ def log_trade(symbol, side, qty, price, response):
         }
     elif side.upper() == "SELL" and symbol in live_positions:
         del live_positions[symbol]
+
+import csv
+import json
+import os
+
+EXPORT_DIR = "exports"
+
+def export_live_trades_csv():
+    filepath = os.path.join(EXPORT_DIR, "live_trades.csv")
+    with open(filepath, "w", newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=live_trades[0].keys())
+        writer.writeheader()
+        writer.writerows(live_trades)
+    return filepath
+
+def export_live_trades_json():
+    filepath = os.path.join(EXPORT_DIR, "live_trades.json")
+    with open(filepath, "w") as f:
+        json.dump(live_trades, f, indent=2)
+    return filepath

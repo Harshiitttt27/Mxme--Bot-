@@ -10,6 +10,9 @@ from app.notifier import send_alert
 from app.strategy import try_enter_position, check_exit
 import random
 import threading
+from flask import send_file
+from app.mexc_live import export_live_trades_csv, export_live_trades_json
+
 
 lock = threading.Lock()
 
@@ -34,6 +37,8 @@ def index():
 
         data = load_data(symbols, start, end, api_key)
         results = run_backtest(data, config)
+        from app.backtester import export_backtest
+        export_backtest(results)
 
     return render_template('index.html', results=results)
 
@@ -141,6 +146,15 @@ def live_trading():
         positions=live_positions,
         trades=live_trades
     )
+
+@app.route("/live/export", methods=["POST"])
+def export_live():
+    format = request.form['format']
+    if format == "csv":
+        filepath = export_live_trades_csv()
+    else:
+        filepath = export_live_trades_json()
+    return send_file(filepath, as_attachment=True)
 
 
 

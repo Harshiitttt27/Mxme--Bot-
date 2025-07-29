@@ -45,3 +45,22 @@ def run_backtest(data, config):
                     del positions[symbol]
                     cooldowns[symbol] = now + timedelta(days=config.REBUY_DELAY_DAYS)
     return trades
+
+
+def export_backtest(trades, filename="backtest"):
+    import os, json, csv
+    os.makedirs("exports", exist_ok=True)
+
+    # CSV
+    csv_path = f"exports/{filename}.csv"
+    with open(csv_path, "w", newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=trades[0].keys())
+        writer.writeheader()
+        writer.writerows(trades)
+
+    # JSON
+    json_path = f"exports/{filename}.json"
+    with open(json_path, "w") as f:
+        json.dump(trades, f, indent=2)
+
+    return {"csv": csv_path, "json": json_path}
