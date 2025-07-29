@@ -1,0 +1,9 @@
+[
+  {
+    "symbol": "BTC-USD",
+    "entry": 104753.38,
+    "exit": 101570.2,
+    "pnl": -3.23,
+    "reason": "stop_loss"
+  }
+]
