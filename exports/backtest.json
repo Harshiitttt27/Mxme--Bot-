@@ -1,9 +1,30 @@
 [
   {
     "symbol": "BTC-USD",
-    "entry": 104753.38,
-    "exit": 101570.2,
-    "pnl": -3.23,
+    "entry": 105920.0,
+    "exit": 108028.6,
+    "pnl": 1.79,
+    "reason": "trailing_exit"
+  },
+  {
+    "symbol": "BTC-USD",
+    "entry": 108246.65,
+    "exit": 117781.64,
+    "pnl": 8.59,
+    "reason": "trailing_exit"
+  },
+  {
+    "symbol": "BTC-USD",
+    "entry": 118681.68,
+    "exit": 118000.0,
+    "pnl": -0.77,
+    "reason": "stop_loss"
+  },
+  {
+    "symbol": "BTC-USD",
+    "entry": 117914.17,
+    "exit": 117312.7,
+    "pnl": -0.71,
     "reason": "stop_loss"
   }
 ]

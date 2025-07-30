@@ -1,0 +1,10 @@
+[
+  {
+    "symbol": "BTCUSDT",
+    "side": "SELL",
+    "quantity": 0.002,
+    "price": 117773.62,
+    "timestamp": "2025-07-30 22:46:33",
+    "response": "SIMULATED"
+  }
+]

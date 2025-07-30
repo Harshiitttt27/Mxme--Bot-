@@ -169,7 +169,7 @@ from flask import Flask, render_template, request, send_file, make_response, ses
 from app.backtester import run_backtest, export_backtest
 from app.data_manager import load_data
 from app.config import Config
-from app.notifier import send_alert
+from app.notifier import notify_live_sell, send_alert
 from app.strategy import try_enter_position, check_exit
 from app.mexc_live import (
     export_live_trades_csv, export_live_trades_json,
@@ -183,6 +183,7 @@ import csv
 import json
 from datetime import datetime, timedelta
 from io import StringIO
+from app.notifier import send_alert, notify_live_buy  # 👈 add this import
 
 # Initialize Flask
 app = Flask(__name__)
@@ -216,7 +217,8 @@ def index():
         export_backtest(results)
         session['results'] = results  # For export
 
-    return render_template('index.html', results=results)
+    # return render_template('index.html', results=results)
+    return render_template('index.html', results=results, positions=None, trades=None, message=None)
 
 
 @app.route("/download-csv")
@@ -254,37 +256,61 @@ def download_json():
 @app.route('/live', methods=['GET', 'POST'])
 def live_trading():
     message = ""
-    if request.method == 'POST':
-        symbol = request.form['symbol'].strip().upper()
-        quantity = request.form['quantity']
-        side = request.form['side']
+    session.pop("results", None)  # Clear previous backtest results when switching to live
 
+    if request.method == 'POST' and request.form.get("form_type") == "live":
         try:
-            result = place_market_order(config.MEXC_API_KEY, config.MEXC_SECRET_KEY, symbol, side, quantity)
-            message = f"Order Executed: {result}"
+            symbol = request.form.get('symbol', '').strip().upper()
+            quantity = request.form.get('quantity', '')
+            side = request.form.get('side', '')
+
+            if not symbol or not quantity or not side:
+                message = "⚠️ Missing required fields."
+            else:
+                result = place_market_order(config.MEXC_API_KEY, config.MEXC_SECRET_KEY, symbol, side, quantity)
+                message = f"✅ Order Executed: {result}"
+
         except Exception as e:
-            message = f"Error: {e}"
+            message = f"❌ Error: {e}"
+
+        session['live_trades'] = live_trades
 
     return render_template(
-        'live.html',
+        'index.html',
         message=message,
         positions=live_positions,
-        trades=live_trades
+        trades=live_trades,
+        results=session.get('results', [])  # still show empty results array
     )
 
+@app.route("/download-live-csv")
+def download_live_csv():
+    trades = session.get("live_trades")
+    if not trades:
+        return "⚠️ No live trades to export", 400
 
-@app.route("/live/export", methods=["POST"])
-def export_live():
-    format = request.form['format']
-    if format == "csv":
-        filepath = export_live_trades_csv()
-    else:
-        filepath = export_live_trades_json()
-    
-    if not filepath:
-        return "⚠️ No trades available to export.", 400
-    
-    return send_file(filepath, as_attachment=True)
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=trades[0].keys())
+    writer.writeheader()
+    for trade in trades:
+        writer.writerow(trade)
+
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=live_trades.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response
+
+
+@app.route("/download-live-json")
+def download_live_json():
+    trades = session.get("live_trades")
+    if not trades:
+        return "⚠️ No live trades to export", 400
+
+    response = make_response(json.dumps(trades, indent=2))
+    response.headers["Content-Disposition"] = "attachment; filename=live_trades.json"
+    response.headers["Content-Type"] = "application/json"
+    return response
 
 
 # ------------ SIMULATED MONITORING LOOP ------------
@@ -308,7 +334,8 @@ def monitor_loop():
                     config.balance += net
                     cooldowns[symbol] = datetime.now() + timedelta(days=config.REBUY_DELAY_DAYS)
                     del positions[symbol]
-                    send_alert(f"[SELL] {symbol} @ ${price:.2f} due to {reason}. Balance: ${config.balance:.2f}")
+                    notify_live_sell(symbol, price, pos['quantity'], reason)
+
 
         with lock:
             for symbol in symbols:

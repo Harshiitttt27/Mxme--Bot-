@@ -104,7 +104,7 @@ import hmac
 import hashlib
 from datetime import datetime
 from app.config import Config
-
+from app.notifier import notify_live_buy, notify_live_sell  # ✅ add this import
 # Position tracking
 live_positions = {}  # symbol: {entry_price, qty, time}
 live_trades = []
@@ -189,9 +189,10 @@ def log_trade(symbol, side, qty, price, response):
             "quantity": float(qty),
             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
+        notify_live_buy(symbol, price, qty)  # ✅ Telegram notify
     elif side.upper() == "SELL" and symbol in live_positions:
         del live_positions[symbol]
-
+        notify_live_sell(symbol, price, qty, reason="Manual or trailing exit")  # ✅ Telegram notify
 
 # CSV / JSON Export for live trades
 import csv

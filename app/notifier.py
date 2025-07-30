@@ -57,3 +57,19 @@ def notify_summary(trades, final_balance, starting_balance):
     f"• 💼 Start → Final Balance: ${starting_balance:.2f} → ${final_balance:.2f}"
 )
 
+def notify_live_buy(symbol, price, quantity):
+    send_alert(
+        f"📢 *LIVE BUY ORDER EXECUTED*\n"
+        f"• Symbol: `{symbol}`\n"
+        f"• Quantity: {quantity}\n"
+        f"• Price: ${price:.2f}"
+    )
+
+def notify_live_sell(symbol, price, quantity, reason):
+    send_alert(
+        f"🔴 *LIVE SELL ORDER EXECUTED*\n"
+        f"• Symbol: `{symbol}`\n"
+        f"• Quantity: {quantity}\n"
+        f"• Price: ${price:.2f}\n"
+        f"• Reason: {reason}"
+    )

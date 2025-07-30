@@ -1,2 +1,5 @@
 symbol,entry,exit,pnl,reason
-BTC-USD,104753.38,101570.2,-3.23,stop_loss
+BTC-USD,105920.0,108028.6,1.79,trailing_exit
+BTC-USD,108246.65,117781.64,8.59,trailing_exit
+BTC-USD,118681.68,118000.0,-0.77,stop_loss
+BTC-USD,117914.17,117312.7,-0.71,stop_loss
