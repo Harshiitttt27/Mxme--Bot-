@@ -1,5 +1,6 @@
-symbol,entry,exit,pnl,reason
-BTC-USD,105920.0,108028.6,1.79,trailing_exit
-BTC-USD,108246.65,117781.64,8.59,trailing_exit
-BTC-USD,118681.68,118000.0,-0.77,stop_loss
-BTC-USD,117914.17,117312.7,-0.71,stop_loss
+symbol,entry,exit,pnl,reason,date
+X:SOLUSD,152.39,147.74,-3.25,stop_loss,2025-07-04
+X:AVAXUSD,18.55,17.81,-4.18,stop_loss,2025-07-04
+X:TRXUSD,0.2869,0.2825,-1.73,stop_loss,2025-07-04
+X:DOGEUSD,0.1722,0.163,-5.56,stop_loss,2025-07-04
+X:XRPUSD,2.2573,2.2208,-1.81,stop_loss,2025-07-04

@@ -184,6 +184,8 @@ import json
 from datetime import datetime, timedelta
 from io import StringIO
 from app.notifier import send_alert, notify_live_buy  # 👈 add this import
+from app.data_manager import load_data, fetch_mexc_symbols, convert_to_polygon_format
+from app.data_manager import get_all_usdt_symbols, get_top_usdt_symbols
 
 # Initialize Flask
 app = Flask(__name__)
@@ -198,12 +200,12 @@ config = Config()
 
 
 # ------------ BACKTEST ROUTES ------------
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     results = []
+    metrics = {}
     if request.method == 'POST':
-        symbols = request.form['symbols'].split(',')
+        mode = request.form.get("symbol_mode", "custom")
         start = request.form['start_date']
         end = request.form['end_date']
         api_key = request.form['api_key']
@@ -212,14 +214,39 @@ def index():
         config.POLYGON_API_KEY = api_key
         config.STARTING_BALANCE = balance
 
-        data = load_data(symbols, start, end, api_key)
-        results = run_backtest(data, config)
-        export_backtest(results)
-        session['results'] = results  # For export
+        # Symbol selection
+        if mode == "all":
+            selected = get_all_usdt_symbols()
+        elif mode == "top":
+            selected = get_top_usdt_symbols(limit=5)
+        else:
+            custom_input = request.form.get("symbols", "")
+            selected = [s.strip().upper() for s in custom_input.split(",") if s.strip()]
 
-    # return render_template('index.html', results=results)
-    return render_template('index.html', results=results, positions=None, trades=None, message=None)
+        # ✅ Convert to polygon symbols
+        polygon_symbols = []
+        for s in selected:
+            if s.startswith("X:"):
+                polygon_symbols.append(s)
+            else:
+                conv = convert_to_polygon_format(s)
+                if conv:
+                    polygon_symbols.append(conv)
 
+        print("[INFO] Final Polygon Symbols Used:", polygon_symbols)
+
+        # Load data and run backtest
+        data = load_data(polygon_symbols, start, end, api_key)
+        result = run_backtest(data, config)  # 🔁 returns dict with trades & metrics
+        export_backtest(result)
+
+        results = result.get("trades", [])
+        metrics = result.get("metrics", {})
+
+        session["results"] = results
+        session["metrics"] = metrics
+
+    return render_template("index.html", results=results, metrics=metrics, positions=None, trades=None, message=None)
 
 @app.route("/download-csv")
 def download_csv():

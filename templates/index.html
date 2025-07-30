@@ -99,7 +99,6 @@
 
     <!-- EXPORT BUTTONS -->
     <div class="d-flex flex-wrap justify-content-between mb-4">
-      <!-- Backtest Export -->
       <div class="btn-group">
         <a href="/download-csv" class="btn btn-success {% if not results %}disabled{% endif %}" title="{% if not results %}Run a backtest first{% endif %}">
           ⬇️ Backtest CSV
@@ -108,8 +107,6 @@
           ⬇️ Backtest JSON
         </a>
       </div>
-
-      <!-- Live Trade Export -->
       <div class="btn-group">
         <a href="{{ url_for('download_live_csv') }}" class="btn btn-info text-white {% if not trades %}disabled{% endif %}" title="{% if not trades %}No live trades to export{% endif %}">
           ⬇️ Live CSV
@@ -122,79 +119,108 @@
 
     <!-- BACKTESTING FORM -->
     <div class="card p-4 mb-5">
-      <h4 class="section-title">📁 Run Backtest</h4>
-      <form method="POST" action="/" onsubmit="showSpinner()">
-        <input type="hidden" name="form_type" value="backtest" />
-        <div class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label">Symbols</label>
-            <input type="text" class="form-control" name="symbols" value="BTCUSDT,ETHUSDT" placeholder="e.g. BTCUSDT,ETHUSDT" />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Start Date</label>
-            <input type="date" class="form-control" name="start_date" />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">End Date</label>
-            <input type="date" class="form-control" name="end_date" />
-          </div>
-          <div class="col-md-2 d-grid align-items-end">
-            <button class="btn btn-primary">Run</button>
-          </div>
-        </div>
+  <h4 class="section-title">📁 Run Backtest</h4>
+  <form method="POST" action="/" onsubmit="return showSpinner()">
+    <input type="hidden" name="form_type" value="backtest" />
+    <div class="row g-3">
+      
+      <!-- Symbol Selection -->
+      <div class="col-md-3">
+        <label class="form-label">Symbol Mode</label>
+        <select class="form-select" name="symbol_mode" id="symbol_mode" onchange="toggleSymbolInput()">
+          <option value="custom" selected>Custom Symbols</option>
+          <option value="top">Top 5 by Volume</option>
+          <option value="all">All USDT Pairs</option>
+        </select>
+      </div>
 
-        <div class="row g-3 mt-3">
-          <div class="col-md-3">
-            <label class="form-label">Starting Balance</label>
-            <input type="number" class="form-control" name="starting_balance" value="10000" />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Polygon.io API Key</label>
-            <input type="password" class="form-control" name="api_key" />
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Rise Threshold (%)</label>
-            <input type="number" step="0.1" class="form-control" name="rise_threshold" value="3.0" />
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Drop Threshold (%)</label>
-            <input type="number" step="0.1" class="form-control" name="drop_threshold" value="-0.5" />
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Trailing Stop (%)</label>
-            <input type="number" step="0.1" class="form-control" name="trailing_stop" value="0.5" />
-          </div>
-        </div>
-      </form>
+      <div class="col-md-4" id="custom_symbol_input">
+        <label class="form-label">Symbols</label>
+        <input type="text" class="form-control" name="symbols" value="BTCUSDT,ETHUSDT"
+          placeholder="e.g. BTCUSDT,ETHUSDT" title="Comma-separated symbol list (e.g., BTCUSDT,ETHUSDT)">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" name="start_date" required>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" name="end_date" required>
+      </div>
     </div>
+
+    <div class="row g-3 mt-3">
+      <div class="col-md-3">
+        <label class="form-label">Starting Balance</label>
+        <input type="number" class="form-control" name="starting_balance" value="10000" min="100" max="1000000" required
+          title="Amount to start backtesting with (100 – 1,000,000)">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Polygon.io API Key</label>
+        <input type="password" class="form-control" name="api_key" placeholder="Enter your Polygon API key" required
+          title="Required to fetch historical price data from Polygon.io">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Rise Threshold (%)</label>
+        <input type="number" step="0.1" class="form-control" name="rise_threshold" value="3.0" min="0.1" max="100"
+          title="Take profit trigger when price rises above this threshold">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Drop Threshold (%)</label>
+        <input type="number" step="0.1" class="form-control" name="drop_threshold" value="-0.5" min="-50" max="0"
+          title="Stop-loss trigger when price drops below this threshold">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Trailing Stop (%)</label>
+        <input type="number" step="0.1" class="form-control" name="trailing_stop" value="0.5" min="0.1" max="50"
+          title="Trailing stop activates after rise threshold is hit">
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary">Run</button>
+      </div>
+    </div>
+  </form>
+</div>
 
     {% if results %}
     <!-- BACKTEST RESULTS -->
     <div class="card p-4 mb-4">
-      <h4 class="section-title">📈 Backtest Results</h4>
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Entry</th>
-            <th>Exit</th>
-            <th>PnL ($)</th>
-            <th>Reason</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in results %}
-          <tr>
-            <td>{{ r.symbol }}</td>
-            <td>{{ r.entry }}</td>
-            <td>{{ r.exit }}</td>
-            <td class="{{ 'text-success' if r.pnl >= 0 else 'text-danger' }}">{{ r.pnl }}</td>
-            <td>{{ r.reason }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <h4 class="section-title">📈 Backtest Results</h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Entry</th>
+          <th>Exit</th>
+          <th>PnL ($)</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ r.symbol }}</td>
+          <td>{{ r.entry }}</td>
+          <td>{{ r.exit }}</td>
+          <td class="{{ 'text-success' if r.pnl >= 0 else 'text-danger' }}">{{ r.pnl }}</td>
+          <td>{{ r.reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
     <!-- PNL CHART -->
     <div class="card p-4 mb-5">
@@ -202,6 +228,66 @@
       <canvas id="pnlChart" height="100"></canvas>
     </div>
     {% endif %}
+     
+{% if metrics %}
+<!-- 📌 Backtest Summary Metrics -->
+<div class="card p-4 mb-4">
+  <h4 class="section-title">📌 Backtest Summary</h4>
+  <ul>
+    <li><strong>Sharpe Ratio:</strong> {{ metrics.sharpe_ratio }}</li>
+    <li><strong>Max Drawdown:</strong> {{ metrics.max_drawdown_pct }}%</li>
+    <li><strong>Monthly Performance:</strong>
+      <ul>
+        {% for month, pnl in metrics.monthly_returns.items() %}
+        <li>{{ month }}: ${{ pnl }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+    <li><strong>Symbol-wise PnL:</strong>
+      <ul>
+        {% for sym, pnl in metrics.symbol_stats.items() %}
+        <li>{{ sym }}: ${{ pnl }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+  </ul>
+</div>
+
+<!-- 📉 Max Drawdown Chart -->
+<div class="card p-4 mb-4">
+  <h4 class="section-title">📉 Max Drawdown Over Time</h4>
+  <canvas id="drawdownChart" height="100"></canvas>
+</div>
+
+<!-- 🌡️ Monthly Heatmap -->
+{% if metrics.heatmap %}
+<div class="card p-4 mb-5">
+  <h4 class="section-title">🌡️ Monthly Symbol Heatmap</h4>
+  <div class="table-responsive">
+    <table class="table table-bordered text-center align-middle">
+      <thead class="table-primary">
+        <tr>
+          <th>Month</th>
+          {% for sym in metrics.heatmap.values() | list | first %}
+          <th>{{ sym[0] }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for month, row in metrics.heatmap.items() %}
+        <tr>
+          <td>{{ month }}</td>
+          {% for sym, val in row.items() %}
+          <td class="{% if val > 0 %}text-success{% elif val < 0 %}text-danger{% endif %}">${{ val }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endif %}
 
     <!-- LIVE TRADE EXECUTION -->
     <div class="card p-4 mb-4">
@@ -290,37 +376,62 @@
   </div>
 </div>
 
+    
 
-  {% if results %}
-  <script>
-    const ctx = document.getElementById('pnlChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: {{ results | map(attribute='symbol') | list | tojson }},
-        datasets: [{
-          label: 'Profit/Loss ($)',
-          data: {{ results | map(attribute='pnl') | list | safe }},
-          borderColor: '#1565c0',
-          backgroundColor: 'rgba(21, 101, 192, 0.1)',
-          tension: 0.3,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: false }
+    {% if results %}
+    <script>
+      const ctx = document.getElementById('pnlChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: {{ results | map(attribute='symbol') | list | tojson }},
+          datasets: [{
+            label: 'Profit/Loss ($)',
+            data: {{ results | map(attribute='pnl') | list | safe }},
+            borderColor: '#1565c0',
+            backgroundColor: 'rgba(21, 101, 192, 0.1)',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: false }
+          }
+        }
+      });
+    </script>
+    {% endif %}
+    {% if metrics and metrics.drawdown_series %}
+<script>
+  const drawdownData = {{ metrics.drawdown_series | tojson }};
+  const drawdownCtx = document.getElementById('drawdownChart').getContext('2d');
+  new Chart(drawdownCtx, {
+    type: 'line',
+    data: {
+      labels: drawdownData.map(d => d.timestamp),
+      datasets: [{
+        label: 'Drawdown (%)',
+        data: drawdownData.map(d => d.drawdown * 100),
+        borderColor: '#c62828',
+        backgroundColor: 'rgba(198, 40, 40, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: value => value + '%' }
         }
       }
-    });
-  </script>
-  {% endif %}
-
-  <script>
-    function showSpinner() {
-      document.getElementById("spinner").style.display = "flex";
     }
-  </script>
+  });
+</script>
+{% endif %}
+
 </body>
 </html>

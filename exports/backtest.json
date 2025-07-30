@@ -1,30 +1,81 @@
-[
-  {
-    "symbol": "BTC-USD",
-    "entry": 105920.0,
-    "exit": 108028.6,
-    "pnl": 1.79,
-    "reason": "trailing_exit"
-  },
-  {
-    "symbol": "BTC-USD",
-    "entry": 108246.65,
-    "exit": 117781.64,
-    "pnl": 8.59,
-    "reason": "trailing_exit"
-  },
-  {
-    "symbol": "BTC-USD",
-    "entry": 118681.68,
-    "exit": 118000.0,
-    "pnl": -0.77,
-    "reason": "stop_loss"
-  },
-  {
-    "symbol": "BTC-USD",
-    "entry": 117914.17,
-    "exit": 117312.7,
-    "pnl": -0.71,
-    "reason": "stop_loss"
+{
+  "trades": [
+    {
+      "symbol": "X:SOLUSD",
+      "entry": 152.39,
+      "exit": 147.74,
+      "pnl": -3.25,
+      "reason": "stop_loss",
+      "date": "2025-07-04"
+    },
+    {
+      "symbol": "X:AVAXUSD",
+      "entry": 18.55,
+      "exit": 17.81,
+      "pnl": -4.18,
+      "reason": "stop_loss",
+      "date": "2025-07-04"
+    },
+    {
+      "symbol": "X:TRXUSD",
+      "entry": 0.2869,
+      "exit": 0.2825,
+      "pnl": -1.73,
+      "reason": "stop_loss",
+      "date": "2025-07-04"
+    },
+    {
+      "symbol": "X:DOGEUSD",
+      "entry": 0.1722,
+      "exit": 0.163,
+      "pnl": -5.56,
+      "reason": "stop_loss",
+      "date": "2025-07-04"
+    },
+    {
+      "symbol": "X:XRPUSD",
+      "entry": 2.2573,
+      "exit": 2.2208,
+      "pnl": -1.81,
+      "reason": "stop_loss",
+      "date": "2025-07-04"
+    }
+  ],
+  "metrics": {
+    "sharpe_ratio": NaN,
+    "max_drawdown_pct": 0.0,
+    "monthly_returns": {
+      "2025-07": -16.53
+    },
+    "symbol_stats": {
+      "X:SOLUSD": -3.25,
+      "X:AVAXUSD": -4.18,
+      "X:TRXUSD": -1.73,
+      "X:DOGEUSD": -5.56,
+      "X:XRPUSD": -1.81
+    },
+    "drawdown_series": [
+      {
+        "timestamp": "2025-07-03",
+        "drawdown": 0.0
+      },
+      {
+        "timestamp": "2025-07-04",
+        "drawdown": 0.0
+      },
+      {
+        "timestamp": "2025-07-05",
+        "drawdown": 0.0
+      }
+    ],
+    "heatmap": {
+      "2025-07": {
+        "X:AVAXUSD": -4.18,
+        "X:DOGEUSD": -5.56,
+        "X:SOLUSD": -3.25,
+        "X:TRXUSD": -1.73,
+        "X:XRPUSD": -1.81
+      }
+    }
   }
-]
+}
